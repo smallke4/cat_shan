@@ -36,6 +36,45 @@
             border-radius: 5px;
             cursor: pointer;
         }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: #ffe6cc;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delete-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .input-container {
+            margin-top: 20px;
+        }
+        input {
+            padding: 8px;
+            width: 60%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .add-button {
+            padding: 8px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -43,8 +82,79 @@
         <h1>歡迎來到善善與我的地球冒險！</h1>
         <p>這裡你可以認識我與善善的相遇，看看牠的可愛照片。</p>
         <img src="images/shan1.jpg" alt="善善" class="cat-image">
+        
+        <h2>🐱 貓咪品種列表 🐱</h2>
+        <ul id="cat-breeds"></ul> <!-- 品種列表 -->
+
+        <div class="input-container">
+            <input type="text" id="breed-input" placeholder="輸入貓咪品種">
+            <button class="add-button" onclick="addBreed()">新增</button>
+        </div>
+
         <br>
-        <a href="#" class="button">探索我與善善的冒險~</a>
+        <a href="main.html" class="button">探索我與善善的冒險~</a>
     </div>
+
+    <script>
+        // 初始貓咪品種陣列
+        let catBreeds = ["賓士貓（善善）", "虎斑", "橘貓"];
+
+        // 取得 <ul> 元素
+        const catBreedsList = document.getElementById("cat-breeds");
+
+        // 更新畫面上的列表
+        function updateList() {
+            catBreedsList.innerHTML = ""; // 清空列表
+            catBreeds.slice(-5).forEach((breed, index) => {  // 只顯示最後 5 個
+                const listItem = document.createElement("li");
+                listItem.textContent = breed;
+
+                // 創建刪除按鈕
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "刪除";
+                deleteButton.className = "delete-btn";
+                deleteButton.onclick = function() { deleteBreed(breed); };
+
+                // 加入列表
+                listItem.appendChild(deleteButton);
+                catBreedsList.appendChild(listItem);
+            });
+        }
+
+        // 新增品種
+        function addBreed() {
+            const inputField = document.getElementById("breed-input");
+            const newBreed = inputField.value.trim(); // 去掉前後空格
+            
+            if (newBreed !== "") {
+                catBreeds.push(newBreed);  // 加入陣列
+                if (catBreeds.includes("賓士貓（善善）") && catBreeds.length > 5) {
+                    // 當「賓士貓（善善）」在陣列中，且陣列長度超過5時，刪除第二個最舊的元素
+                    let indexToRemove = 1; // 第二個元素的位置（也就是索引1）
+                    if (indexToRemove !== -1) {
+                        catBreeds.splice(indexToRemove, 1); // 刪除第二個最舊的元素
+                    }
+                }
+                updateList(); // 更新顯示
+                inputField.value = ""; // 清空輸入框
+            } else {
+                alert("請輸入貓咪品種！");
+            }
+        }
+
+        // 刪除品種
+        function deleteBreed(breed) {
+            if (breed === "賓士貓（善善）") {
+                alert("這是善善的地盤，不給你刪除~");
+                return;
+            }
+
+            catBreeds = catBreeds.filter(b => b !== breed); // 移除該品種
+            updateList(); // 更新列表
+        }
+
+        // 頁面載入時顯示初始品種
+        updateList();
+    </script>
 </body>
 </html>
