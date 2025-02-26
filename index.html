@@ -66,7 +66,7 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        .add-button {
+        .add-button, .random-button {
             padding: 8px 15px;
             background-color: #28a745;
             color: white;
@@ -75,6 +75,49 @@
             cursor: pointer;
             margin-left: 10px;
         }
+        .personality-list {
+            margin-top: 20px;
+            padding: 0;
+            list-style-type: none;
+        }
+        .personality-list li {
+            background: #ffe6cc;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .quiz-container {
+            width: 100%;
+            max-width: 400px; /* 限制最大寬度 */
+            margin: 0 auto; /* 置中 */
+            padding: 20px;
+            background: #ffe6cc;
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .quiz-question {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .quiz-options {
+            margin-top: 10px;
+        }
+        .quiz-options label {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* 讓 radio 與文字間距合理 */
+        }
+        .quiz-button {
+            display: block;
+            width: 100%; /* 讓按鈕符合容器 */
+            max-width: 200px;
+            margin: 10px auto; /* 置中 */
+        }
+        .quiz-result {
+            margin-top: 10px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -82,6 +125,9 @@
         <h1>歡迎來到善善與我的地球冒險！</h1>
         <p>這裡你可以認識我與善善的相遇，看看牠的可愛照片。</p>
         <img src="images/shan1.jpg" alt="善善" class="cat-image">
+
+        <h2>🐱 善善的個性 🐱</h2>
+        <ul class="personality-list" id="personality-list"></ul>
         
         <h2>🐱 貓咪品種列表 🐱</h2>
         <ul id="cat-breeds"></ul> <!-- 品種列表 -->
@@ -91,21 +137,39 @@
             <button class="add-button" onclick="addBreed()">新增</button>
         </div>
 
+        <h2>🐱 貓咪小測驗 🐱</h2>
+        <div class="quiz-container">
+            <p class="quiz-question">善善的品種是？</p>
+            <div class="quiz-options">
+                <label><input type="radio" name="quiz" value="虎斑"> 虎斑</label>
+                <label><input type="radio" name="quiz" value="賓士貓"> 賓士貓</label>
+                <label><input type="radio" name="quiz" value="米克斯"> 米克斯</label>
+                <label><input type="radio" name="quiz" value="布偶貓"> 布偶貓</label>
+            </div>
+            <button class="quiz-button" onclick="checkAnswer()">確認答案</button>
+            <p class="quiz-result" id="quiz-result"></p>
+        </div>
+        <h2>🐱 今日貓貓運勢 🐱</h2>
+        <br>
+        <button class="random-button" onclick="recommendBreed()">今日你適合什麼樣的貓貓呢？</button>
+        <p id="recommended-breed"></p>
+
         <br>
         <a href="main.html" class="button">探索我與善善的冒險~</a>
     </div>
 
     <script>
         // 初始貓咪品種陣列
-        let catBreeds = ["賓士貓（善善）", "虎斑", "橘貓"];
+        let catBreeds = ["賓士貓（善善）", "虎斑", "橘貓"];//let**用於宣告一個「只作用在當前區塊的變數」，初始值可選擇性的設定
 
         // 取得 <ul> 元素
         const catBreedsList = document.getElementById("cat-breeds");
 
         // 更新畫面上的列表
         function updateList() {
-            catBreedsList.innerHTML = ""; // 清空列表
-            catBreeds.slice(-5).forEach((breed, index) => {  // 只顯示最後 5 個
+            catBreedsList.innerHTML = ""; // 每次清空列表(代表若想保留舊的這行註解掉)
+            //「從陣列的最後開始，取出最多 5 個元素」。但如果陣列本身少於 5 個元素，slice(-5) 仍然會回傳全部的元素，而不會出錯。
+            catBreeds.slice(-5).forEach((breed, index) => {  // 只顯示最後 5 個 //catBreeds.slice(-5) 從該陣列取出最後5個值
                 const listItem = document.createElement("li");
                 listItem.textContent = breed;
 
@@ -144,6 +208,7 @@
 
         // 刪除品種
         function deleteBreed(breed) {
+            //嚴格相等(或稱"三等於"、"全等") 使用=== 一般相等("雙等於") 
             if (breed === "賓士貓（善善）") {
                 alert("這是善善的地盤，不給你刪除~");
                 return;
@@ -152,6 +217,59 @@
             catBreeds = catBreeds.filter(b => b !== breed); // 移除該品種
             updateList(); // 更新列表
         }
+        // 推薦貓貓
+        function recommendBreed() {
+            if (catBreeds.length === 0) {
+                document.getElementById("recommended-breed").textContent = "目前沒有可推薦的貓咪品種。";
+                return;
+            }
+            //Math.random()：產生一個 0 到 1（不含 1）之間的隨機小數 Math.floor(x)：無條件捨去，回傳「小於等於」所給數字的最大整數
+            const randomIndex = Math.floor(Math.random() * catBreeds.length);
+            document.getElementById("recommended-breed").textContent = "今日適合你的貓咪是：" + catBreeds[randomIndex] + "！";
+        }
+
+        // 讀取 JSON 檔案並顯示個性
+        async function loadPersonality() {
+            try {
+                const response = await fetch("shan_personality.json"); // 載入 JSON
+                const data = await response.json(); // 解析 JSON
+                
+                const personalityList = document.getElementById("personality-list");
+                personalityList.innerHTML = ""; // 清空列表
+
+                data.personalities.forEach(personality => {
+                    const listItem = document.createElement("li");
+                    listItem.textContent = personality;
+                    personalityList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error("載入個性時發生錯誤：", error);
+            }
+        }
+
+        function checkAnswer() {
+            // 取得使用者選擇的答案
+            let selectedOption = document.querySelector('input[name="quiz"]:checked');
+            if (!selectedOption) {
+                alert("請選擇一個答案！");
+                return;
+            }
+            
+            let answer = selectedOption.value;
+            let correctAnswers = ["賓士貓", "米克斯"]; // 正確答案
+            let resultText = document.getElementById("quiz-result");
+
+            if (correctAnswers.includes(answer)) {
+                resultText.textContent = "恭喜！答對了！";
+                resultText.style.color = "green";
+            } else {
+                resultText.textContent = "答錯了！再試試看吧！";
+                resultText.style.color = "red";
+            }
+        }
+
+        // 頁面載入時讀取 JSON
+        loadPersonality();
 
         // 頁面載入時顯示初始品種
         updateList();
